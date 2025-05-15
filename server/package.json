@@ -1,11 +1,11 @@
 {
-  "name": "blogging_site_assignment",
+  "name": "server",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
     "start": "nodemon start"
   },
-  "author": "yash-patoliya",
+  "author": "yash_patoliya",
   "license": "ISC",
   "description": "",
   "dependencies": {
