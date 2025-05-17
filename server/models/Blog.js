@@ -15,6 +15,7 @@ const blogSchema= mongoose.Schema({
     },
     status:{
         type:String,
+        enum:['published','draft'],
         require:true,
     },
 },{timestamps:true})

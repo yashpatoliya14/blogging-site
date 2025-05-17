@@ -14,7 +14,7 @@ mongoose.connect(process.env.MONGO_URL)
     app.use(express.urlencoded())
     //routes
     app.use('/api/blog',blogRouter)
-
+    app.use('/api/user')
     app.listen(PORT , (err)=>{
         if(!err){
             console.log("Server start at ",PORT)

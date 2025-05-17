@@ -1,10 +1,13 @@
+const { default: mongoose } = require('mongoose')
 const Blog = require('../models/Blog')
 
 //this function use to create a blog and store into database
 const blogPublish = async (req, res) => {
     try {
+        const {id } = req.params
         const { title, content, tags } = req.body
-        const blog = await Blog.create({
+        console.log(title);
+        const blog = await Blog.updateOne({_id:id },{
             title,
             content,
             tags:tags ?? [],
@@ -19,6 +22,43 @@ const blogPublish = async (req, res) => {
 
     }
 }
+
+//
+const blogSaveDraft = async (req, res) => {
+    try {
+        const { title, content, tags,id } = req.body
+        console.log(id,title);
+        
+        let blog;
+        if(id){
+             blog = await Blog.findByIdAndUpdate(id,{
+                title,
+                content,
+                tags:tags ?? [],
+                status: 'draft'
+                })
+            if (!blog) {
+                return res.status(404).json({ success: false, msg: 'Draft not found' });
+            }
+        }else{
+            blog = await Blog.create({
+                title,
+                content,
+                tags:tags ?? [],
+                status: 'draft'
+            })
+        }
+
+        return res.status(200).json({ success: true, msg: "blog saved", data: blog })
+    } catch (err) {
+
+        console.log("error at blog save route", err)
+
+        return res.status(500).json({ success: false, msg: "blog doesn't save error" })
+
+    }
+}
+
 
 //this function use to get a blog by id from database
 const getBlogById = async (req, res) => {
@@ -74,5 +114,6 @@ const getAllBlog = async (req, res) => {
 module.exports = {
     blogPublish,
     getBlogById,
-    getAllBlog
+    getAllBlog,
+    blogSaveDraft
 }
