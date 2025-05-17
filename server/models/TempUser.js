@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-const userSchema= mongoose.Schema({
+const tempUserSchema= mongoose.Schema({
     name:{
         type:String,
         require:true
@@ -19,9 +19,6 @@ const userSchema= mongoose.Schema({
     otpExpire:{
         type:Date,
     },
-    isVerified:{
-        type:Boolean,
-    }
 },{timestamps:true})
 
-module.exports = mongoose.model('User',userSchema)
+module.exports = mongoose.model('TempUser',tempUserSchema)

@@ -23,7 +23,7 @@ const blogPublish = async (req, res) => {
     }
 }
 
-//
+//this function helps into save the blog if blog id exist then update exiting one otherwise create
 const blogSaveDraft = async (req, res) => {
     try {
         const { title, content, tags,id } = req.body
@@ -31,6 +31,7 @@ const blogSaveDraft = async (req, res) => {
         
         let blog;
         if(id){
+            //update
              blog = await Blog.findByIdAndUpdate(id,{
                 title,
                 content,
@@ -41,6 +42,8 @@ const blogSaveDraft = async (req, res) => {
                 return res.status(404).json({ success: false, msg: 'Draft not found' });
             }
         }else{
+
+            //create
             blog = await Blog.create({
                 title,
                 content,

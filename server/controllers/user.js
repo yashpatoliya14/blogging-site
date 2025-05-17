@@ -1,146 +1,127 @@
 // controllers/auth.js
-const bcrypt   = require('bcryptjs');
-const {signJwt,genOtp,sendEmail} = require('../services/auth')
-const User     = require('../models/User');
+const bcrypt = require('bcryptjs');
+const { genOtp, signJwt, mailOtp } = require('../services/auth')
+const User = require('../models/User');
+const TempUser = require('../models/TempUser');
 
 
-// ─────────────────────────────────────────────────────────
-// @route   POST /api/auth/signup
-// @desc    Register new user & send OTP
-// ─────────────────────────────────────────────────────────
-const signUp = async (req, res) => {
+// POST /api/auth/signup
+exports.signUp = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { email, password, name } = req.body;
 
-    if (!name || !email || !password)
-      return res.status(400).json({ success: false, msg: 'All fields required' });
-
+    // 1️⃣ already verified?
     if (await User.findOne({ email }))
-      return res.status(400).json({ success: false, msg: 'Email already registered' });
+      return res.status(400).json({ success: false, msg: 'Email already registered.' });
+
+    // 2️⃣ pending verification? -> purge & overwrite (optional)
+    await TempUser.deleteOne({ email });
 
     const hash = await bcrypt.hash(password, 12);
+    const otp = genOtp();
+    const otpExpire = Date.now() + (+(process.env.OTP_EXPIRY_MIN || 15) * 60 * 1000);
 
-    const user = await User.create({ name, email, password: hash, isVerified: false });
-
-    // Immediately send OTP
-    await sendOtpInternal(user); // helper below
+    await TempUser.create({ name, email, password: hash, otp, otpExpire });
+    await mailOtp(email, otp);
 
     res.status(201).json({
       success: true,
-      msg: 'Signup successful. OTP sent to your email to verify the account.'
+      msg: 'Check your email for the OTP to verify your account.'
     });
-  } catch (err) {
-    console.error(err);
+  } catch (e) {
+    console.error(e);
     res.status(500).json({ success: false, msg: 'Server error' });
   }
 };
 
-// ─────────────────────────────────────────────────────────
-// @route   POST /api/auth/signin
-// @desc    Authenticate & return JWT
-// ─────────────────────────────────────────────────────────
-const signIn = async (req, res) => {
+// POST /api/auth/verify-otp
+exports.verifyOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    const tempUser = await TempUser.findOne({ email });
+    if (!tempUser)
+      return res.status(400).json({ success: false, msg: 'No pending signup found.' });
+
+    if (Date.now() > tempUser.otpExpire)
+      return res.status(400).json({ success: false, msg: 'OTP expired.' });
+
+    if (otp.toString() !== tempUser.otp)
+      return res.status(400).json({ success: false, msg: 'Invalid OTP.' });
+
+    // Move data into User
+    const user = await User.create({
+      email: tempUser.email,
+      password: tempUser.password,
+      isVerified: true
+    });
+
+    await TempUser.deleteOne({ _id: tempUser._id });
+
+    const token = signJwt({ id: user._id });
+    res.cookie('token', token, {
+      httpOnly: true,                 
+      secure: process.env.NODE_ENV === 'production', 
+      sameSite: 'strict',              
+      maxAge: 7 * 24 * 60 * 60 * 1000  // 7 days 
+    })
+    res.status(200).json({
+      success: true,
+      msg: 'Email verified & account created!',
+      token,
+      user: { id: user._id, email: user.email }
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ success: false, msg: 'Server error' });
+  }
+};
+
+// POST /api/auth/send-otp  (resend)
+exports.sendOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const tempUser = await TempUser.findOne({ email });
+    if (!tempUser)
+      return res.status(400).json({ success: false, msg: 'No pending signup found.' });
+
+    const otp = genOtp();
+    const otpExp = Date.now() + (+(process.env.OTP_EXPIRY_MIN || 15) * 60 * 1000);
+
+    tempUser.otp = otp;
+    tempUser.otpExpire = otpExp;
+    await tempUser.save();
+    await mailOtp(email, otp);
+
+    res.status(200).json({ success: true, msg: 'OTP resent.' });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ success: false, msg: 'Server error' });
+  }
+};
+
+// POST /api/auth/signin
+exports.signIn = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
     if (!user)
-      return res.status(400).json({ success: false, msg: "User doesn't exist" });
+      return res.status(400).json({ success: false, msg: 'User not found.' });
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
-      return res.status(400).json({ success: false, msg: 'Invalid Password' });
-
-    if (!user.isVerified)
-      return res.status(400).json({ success: false, msg: 'Email not verified. Please verify OTP.' });
+    const ok = await bcrypt.compare(password, user.password);
+    if (!ok)
+      return res.status(400).json({ success: false, msg: 'Invalid credentials.' });
 
     const token = signJwt({ id: user._id });
 
-    res.status(200).json({ success: true, msg: 'Signin successful', token, user: { id: user._id, name: user.name, email: user.email } });
-  } catch (err) {
-    console.error(err);
+    res.status(200).json({
+      success: true,
+      msg: 'Signin successful',
+      token,
+      user: { id: user._id, email: user.email }
+    });
+  } catch (e) {
+    console.error(e);
     res.status(500).json({ success: false, msg: 'Server error' });
   }
 };
-
-// ─────────────────────────────────────────────────────────
-// @route   POST /api/auth/send-otp
-// @desc    Resend OTP for email verification (needs email)
-// ─────────────────────────────────────────────────────────
-const sendOtp = async (req, res) => {
-  try {
-    const { email } = req.body;
-
-    const user = await User.findOne({ email });
-    if (!user)
-      return res.status(400).json({ success: false, msg: "User doesn't exist" });
-
-    if (user.isVerified)
-      return res.status(400).json({ success: false, msg: 'User already verified' });
-
-    await sendOtpInternal(user);
-
-    res.status(200).json({ success: true, msg: 'OTP sent' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, msg: 'Server error' });
-  }
-};
-
-// ─────────────────────────────────────────────────────────
-// @route   POST /api/auth/verify-otp
-// @desc    Verify OTP & activate account
-// ─────────────────────────────────────────────────────────
-const verifyOtp = async (req, res) => {
-  try {
-    const { email, otp } = req.body;
-
-    const user = await User.findOne({ email });
-    if (!user)
-      return res.status(400).json({ success: false, msg: "User doesn't exist" });
-
-    if (!user.otpHash || !user.otpExpiry)
-      return res.status(400).json({ success: false, msg: 'Please request a new OTP' });
-
-    if (Date.now() > user.otpExpiry)
-      return res.status(400).json({ success: false, msg: 'OTP expired. Request a new one.' });
-
-    const isMatch = await bcrypt.compare(otp, user.otpHash);
-    if (!isMatch)
-      return res.status(400).json({ success: false, msg: 'Invalid OTP' });
-
-    user.isVerified = true;
-    user.otpHash = undefined;
-    user.otpExpiry = undefined;
-    await user.save();
-
-    res.status(200).json({ success: true, msg: 'Email verified successfully' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, msg: 'Server error' });
-  }
-};
-
-// ─────────────────────────────────────────────────────────
-// Internal helper: generate, hash, save, and mail OTP
-// ─────────────────────────────────────────────────────────
-async function sendOtpInternal(user) {
-  const otp = genOtp();
-  const otpHash = await bcrypt.hash(otp, 12);
-  const expiry   = Date.now() + (Number(process.env.OTP_EXPIRY_MIN || 15) * 60 * 1000);
-
-  user.otp   = otpHash;
-  user.otpExpire = expiry;
-  await user.save();
-
-  await sendEmail(
-    user.email,
-    'Your verification code',
-    `<p>Hello ${user.name || ''},</p>
-     <p>Your verification code is:</p>
-     <h2 style="letter-spacing:2px;">${otp}</h2>
-     <p>This code will expire in ${process.env.OTP_EXPIRY_MIN || 15} minutes.</p>`
-  );
-}
-
-module.exports = { signUp, signIn, sendOtp, verifyOtp };
