@@ -14,7 +14,7 @@ export default function BlogRead() {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const res = await axios.get(`${BACKEND_URL}/api/blog/${id}`);
+        const res = await axios.get(`${BACKEND_URL}/api/blog/${id}`,{withCredentials:true});
         setPost(res.data.data);
       } catch (error) {
         console.error('Error fetching blog:', error);

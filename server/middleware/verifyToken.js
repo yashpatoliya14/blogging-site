@@ -1,8 +1,11 @@
 const jwt = require('jsonwebtoken');
 
 const verifyToken = (req, res, next) => {
-  const token = req.cookies.token;
 
+  //extract a token 
+  const token = req.cookies.token;
+  
+  //for unauthorized user request
   if (!token) {
     return res.status(401).json({ message: 'Access Denied. No token provided.' });
   }
@@ -10,7 +13,7 @@ const verifyToken = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded; // attach user info to request
-    next(); // continue to next middleware/route
+    next(); 
   } catch (err) {
     return res.status(403).json({ message: 'Invalid or expired token' });
   }

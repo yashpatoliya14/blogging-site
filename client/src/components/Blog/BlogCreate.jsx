@@ -5,6 +5,7 @@ import { Check, Plus } from 'lucide-react'; // Optional: install lucide-react ic
 import TagSelector from './TagSelector';
 import axios from 'axios'
 import { useNavigate, useParams } from 'react-router';
+import toast from 'react-hot-toast';
 export default function BlogCreate() {
   const {id} = useParams()
   const [title, setTitle] = useState('');
@@ -13,12 +14,32 @@ export default function BlogCreate() {
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
   const navigate = useNavigate()
   const typingTimeoutRef = useRef(null)
+
+  /* --------------------------------fetch post if it is edit mode ---------------------*/
+  useEffect(()=>{
+    async function fetchdraftPost(){
+      const res = await axios.get(BACKEND_URL + '/api/blog/' + id,{
+      withCredentials:true})
+
+      toast(res.data.msg)
+      if(res.data){
+        const post = res.data.data
+        setTitle(post.title)
+        setContent(post.content)
+        setTags(post.tags)
+        
+      }
+    }
+    fetchdraftPost()
+  },[])
+
   const onPublish = async (title,content)=>{
     const res = await axios.post(BACKEND_URL + '/api/blog/publish/' + id,{
       title,
       content,
-      tags      
-    })
+      tags,
+      userId:localStorage.getItem('id')      
+    },{withCredentials:true})
 
     if(res.data){
       const data = res.data
@@ -50,8 +71,9 @@ useEffect(() => {
         title,
         content,
         tags,
-        id      
-      })
+        id,
+        userId:localStorage.getItem('id')      
+      },{withCredentials:true})
       
       if(res.data){
         const data = res.data

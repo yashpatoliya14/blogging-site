@@ -18,6 +18,10 @@ const blogSchema= mongoose.Schema({
         enum:['published','draft'],
         require:true,
     },
+    userId:{
+        type:Object,
+        ref:'User'
+    }
 },{timestamps:true})
 
 module.exports = mongoose.model('Blog',blogSchema)

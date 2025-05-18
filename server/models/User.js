@@ -21,7 +21,7 @@ const userSchema= mongoose.Schema({
     },
     isVerified:{
         type:Boolean,
-    }
+    },
 },{timestamps:true})
 
 module.exports = mongoose.model('User',userSchema)

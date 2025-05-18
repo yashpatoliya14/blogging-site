@@ -3,6 +3,7 @@ import { PlusIcon } from '@heroicons/react/24/solid';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import BlogCard from '../components/Blog/BlogCard';
+import toast from 'react-hot-toast';
 
 /* Fallback data while waiting for the API */
 const INITIAL_POSTS = [
@@ -25,14 +26,14 @@ export default function BlogDisplay() {
   const navigate = useNavigate();
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-  /* fetch posts once on mount */
+  /* --------------------------------fetch posts once on mount ---------------------*/
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         setLoading(true);
-        const { data } = await axios.get(`${BACKEND_URL}/api/blog`);
+        const { data } = await axios.get(`${BACKEND_URL}/api/blog`, { withCredentials: true });
         // if your API returns { data: [...] } adjust accordingly
-        setPosts(data.data);     
+        setPosts(data.data);
       } catch (err) {
         console.error('Error fetching posts:', err);
       } finally {
@@ -43,33 +44,53 @@ export default function BlogDisplay() {
     fetchPosts();
   }, [BACKEND_URL]);
 
-  async function onCreate(){
-        const res = await axios.post(BACKEND_URL + '/api/blog/save-draft',{
-          title:'',
-          content:'',
-          tags:[],      
-        })
-        
-        if(res.data){
-          const data = res.data.data
-          navigate('/create-blog/' + data._id)
-        }else{
-          console.log("Data doesn't found !");
-        }
-      }
-      
+  //-----------------------------------create post on button click-------------------------------------
+  async function onCreate() {
+    const res = await axios.post(BACKEND_URL + '/api/blog/save-draft', {
+      title: '',
+      content: '',
+      tags: [],
+      userId: localStorage.getItem('id')
+    }, { withCredentials: true })
 
-  /* derive tag list */
+    toast(res.data)
+    console.log(res.data);
+
+    if (res.data) {
+      const data = res.data.data
+      navigate('/create-blog/' + data._id)
+    } else {
+      console.log("Data doesn't found !");
+    }
+  }
+
+
+  /*------------------------------ derive tag list -------------------------- */
   const allTags = [
     'All',
     ...Array.from(new Set(posts.flatMap((p) => p.tags))),
   ];
+  /* ---------------- current user id ----------------- */
+  const userId = localStorage.getItem('id');
 
-  /* filter posts by tag */
-  const filtered =
+  /* ---------------- tag filter ---------------------- */
+  const basePosts =
     selectedTag === 'All'
       ? posts
-      : posts.filter((p) => p.tags.includes(selectedTag));
+      : posts.filter(p => p.tags.includes(selectedTag));
+
+  /* -----------keep drafts only if present userId or published status----- */
+  const visible = basePosts.filter(
+    p => p.status !== 'draft' || p.userId === userId
+  );
+
+  /* ---------- put **my** drafts first --------------- */
+  const filtered = visible.sort((a, b) => {
+    if (a.status === 'draft' && b.status !== 'draft') return -1; 
+    if (a.status !== 'draft' && b.status === 'draft') return 1;
+    return 0;                                    
+  });
+
 
   /* -------- UI -------- */
   return (
@@ -98,11 +119,10 @@ export default function BlogDisplay() {
           <button
             key={tag}
             onClick={() => setSelectedTag(tag)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-              selectedTag === tag
+            className={`px-4 py-2 rounded-full text-sm font-medium transition ${selectedTag === tag
                 ? 'bg-slate-600 text-white'
                 : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
-            }`}
+              }`}
           >
             {tag}
           </button>

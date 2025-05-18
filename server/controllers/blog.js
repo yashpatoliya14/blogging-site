@@ -1,17 +1,19 @@
 const { default: mongoose } = require('mongoose')
 const Blog = require('../models/Blog')
 
-//this function use to create a blog and store into database
+// @route POST /api/blog/publish/:id
+// @des this function use to create a blog and store into database
 const blogPublish = async (req, res) => {
     try {
         const {id } = req.params
-        const { title, content, tags } = req.body
+        const { title, content, tags,userId } = req.body
         console.log(title);
         const blog = await Blog.updateOne({_id:id },{
             title,
             content,
             tags:tags ?? [],
-            status: 'published'
+            status: 'published',
+            userId
         })
         return res.status(200).json({ success: true, msg: "blog is published", data: blog })
     } catch (err) {
@@ -23,20 +25,22 @@ const blogPublish = async (req, res) => {
     }
 }
 
-//this function helps into save the blog if blog id exist then update exiting one otherwise create
+// @route POST /api/blog/save-draft
+// @des this function helps into save the blog if blog id exist then update exiting one otherwise create
 const blogSaveDraft = async (req, res) => {
     try {
-        const { title, content, tags,id } = req.body
+        const { title, content, tags,id,userId } = req.body
         console.log(id,title);
         
         let blog;
         if(id){
             //update
-             blog = await Blog.findByIdAndUpdate(id,{
+             const blog = await Blog.findByIdAndUpdate(id,{
                 title,
                 content,
                 tags:tags ?? [],
-                status: 'draft'
+                status: 'draft',
+                userId
                 })
             if (!blog) {
                 return res.status(404).json({ success: false, msg: 'Draft not found' });
@@ -48,7 +52,8 @@ const blogSaveDraft = async (req, res) => {
                 title,
                 content,
                 tags:tags ?? [],
-                status: 'draft'
+                status: 'draft',
+                userId
             })
         }
 
@@ -62,8 +67,8 @@ const blogSaveDraft = async (req, res) => {
     }
 }
 
-
-//this function use to get a blog by id from database
+// @route GET /api/blog/:id
+// @des this function use to get a blog by id from database
 const getBlogById = async (req, res) => {
     try {
         const { id } = req.params
@@ -89,7 +94,8 @@ const getBlogById = async (req, res) => {
     }
 }
 
-//this function use to get all blogs
+// @route GET /api/blog/
+// @des this function use to get all blogs
 const getAllBlog = async (req, res) => {
     try {
 

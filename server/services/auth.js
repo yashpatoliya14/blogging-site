@@ -9,8 +9,8 @@ const genOtp = () => otpGenerator.generate(4, { upperCaseAlphabets: false, speci
 
 const transporter = nodemailer.createTransport({
     service: 'Gmail',
-    host: 'smtp.gmail.com', // SMTP server for your email provider
-  port: 465, // Common secure port
+    host: 'smtp.gmail.com',
+  port: 465, 
   secure: true,
     port: 587,
     auth: {
