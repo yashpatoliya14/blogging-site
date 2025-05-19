@@ -2,6 +2,7 @@
 import axios from 'axios';
 import React, { useEffect, useRef, useState } from 'react';
 import { Navigate } from 'react-router-dom';
+import Loader from './components/Loader';
 
 export default function ProtectedRoute({ children }) {
     const [isAuthenticated, setIsAuthenticated] = useState(null)
@@ -19,7 +20,7 @@ export default function ProtectedRoute({ children }) {
         }
         checkUserAuthenticate()
     }, [BACKEND_URL])
-    if (isAuthenticated === null) return <p>Loading...</p>;
+    if (isAuthenticated === null) return <div className='flex flex-col items-center mt-[50%]'><Loader/></div>;
 
     return isAuthenticated ? children : <Navigate to="/signin" replace />;
 }
