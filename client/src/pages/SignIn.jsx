@@ -85,12 +85,7 @@ export default function Login() {
     <div className="grid min-h-screen md:grid-cols-2">
       {/* ---------- left image ---------- */}
       <div className="relative hidden md:block h-screen bg-black">
-  {/* Background Image */}
-  <img 
-    src="https://source.unsplash.com/1600x900/?blog,writing" 
-    alt="Blogging" 
-    className="w-full h-full object-cover opacity-70" 
-  />
+  
 
   <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/20"></div>
 

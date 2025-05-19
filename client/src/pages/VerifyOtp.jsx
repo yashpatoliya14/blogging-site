@@ -66,11 +66,7 @@ export default function VerifyOtp() {
     <div className="grid min-h-screen md:grid-cols-2">
       {/* ---- Left hero image ---- */}
       <div className="relative hidden md:block h-screen bg-black">
-        <img
-          src="https://source.unsplash.com/1600x900/?blog,writing"
-          alt="Blogging"
-          className="w-full h-full object-cover opacity-70"
-        />
+        
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/20" />
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
           <h1 className="text-white text-5xl md:text-6xl font-extrabold drop-shadow-lg">

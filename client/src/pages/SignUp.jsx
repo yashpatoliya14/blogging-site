@@ -18,12 +18,12 @@ export default function SignUp() {
   const navigate  = useNavigate();
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-  // -----------------──── form & UI state -----------------────
+  // ----------------- form & UI state -----------------
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [errors,   setErrors]   = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // -----------------──── handlers -----------------────
+  // ----------------- handlers -----------------
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setErrors((prev) => ({ ...prev, [e.target.name]: null }));
@@ -63,7 +63,7 @@ export default function SignUp() {
     }
   };
 
-  // -----------------──── motion variants -----------------────
+  // ----------------- motion variants -----------------
   const fadeSlide = {
     hidden: { opacity: 0, x: 0 },
     show  : { opacity: 1, x: 0, transition: { duration: 0.6 } },
@@ -73,11 +73,7 @@ export default function SignUp() {
     <div className="grid min-h-screen md:grid-cols-2">
       {/* ----------------- Left hero image ----------------- */}
       <div className="relative hidden md:block h-screen bg-black">
-        <img
-          src="https://source.unsplash.com/1600x900/?blog,writing"
-          alt="Blogging"
-          className="w-full h-full object-cover opacity-70"
-        />
+        
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/20" />
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
           <h1 className="text-white text-5xl md:text-6xl font-extrabold drop-shadow-lg">
