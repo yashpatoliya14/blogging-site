@@ -4,6 +4,7 @@ const verifyToken = (req, res, next) => {
 
   //extract a token 
   const token = req.cookies.token;
+  console.log(token);
   
   //for unauthorized user request
   if (!token) {

@@ -25,11 +25,13 @@ mongoose.connect(process.env.MONGO_URL)
         })
         app.get('/sign-out', verifyToken, (req, res) => {
             try {
+                
                 res.clearCookie('token', {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === 'production',
-                    sameSite: 'Lax',
+                    secure: true,
+                    sameSite: 'None',
                 })
+                console.log("sign-out visited");
 
                 return res.json({ success: true, msg: "User sign-out successful !" })
             }
