@@ -160,9 +160,14 @@ export default function Header() {
 
                 <div className="py-6">
                   {isLoggedIn ? (
-                    <div className="text-sm font-semibold text-gray-700">
+                    <div>
+                    <div className="text-sm font-semibold text-gray-700" >
                       {email}
+                    </div>
+                    <button onClick={()=>signOut()} className="cursor-pointer border-2 text-center p-3 rounded-xl bg-black text-white text-xs font-semibold " >
+                      Sign Out
                       <IoIosLogOut className="inline ml-2" />
+                    </button>
                     </div>
                   ) : (
                     <Link to="/signin" className="text-md font-semibold text-gray-900">
