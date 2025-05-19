@@ -19,7 +19,6 @@ function App() {
         <Routes>
           <Route path='/' element={<Layout/>}>
             <Route index element={<Home/>}/>  
-            
             <Route path='/blogs' element={<ProtectedRoute><BlogDisplay/></ProtectedRoute>}/>  
             <Route path='/create-blog/:id' element={<ProtectedRoute><BlogCreate/></ProtectedRoute>}/>  
             <Route path='/about' element={<About/>}/>  
