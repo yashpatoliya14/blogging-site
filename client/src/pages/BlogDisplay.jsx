@@ -5,6 +5,7 @@ import axios from 'axios';
 import BlogCard from '../components/Blog/BlogCard';
 import toast from 'react-hot-toast';
 import TagDisplay from '../components/Blog/TagDisplay';
+import Loader from '../components/Loader';
 
 /* Fallback data while waiting for the API */
 const INITIAL_POSTS = [
@@ -119,7 +120,9 @@ export default function BlogDisplay() {
 
       {/* Posts grid */}
       {isLoading ? (
-        <p className="text-center text-slate-500">Loading…</p>
+        <div className='w-full flex flex-col items-center'>
+          <Loader/>
+        </div>
       ) : (
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((post) => (
