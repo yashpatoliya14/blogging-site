@@ -155,9 +155,12 @@ const onSave = async (title,content)=>{
             </button> 
             <button
               className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-3 px-6 rounded focus:outline-none focus:shadow-outline mr-3"
-              onClick={() => {
-                onSave( title, content )
-                navigate('/blogs')
+              onClick={async () => {
+                await onSave( title, content )
+                .then(()=>{
+                  navigate('/blogs')
+                })
+                
               }}
             >
               Save as Draft
