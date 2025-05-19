@@ -27,7 +27,7 @@ export default function BlogRead() {
     fetchPost();
   }, [id]);
 
-  if (loading) return <div className="py-20 text-center"><Loader/></div>;
+  if (loading) return <div className="py-20 text-center flex flex-col items-center"><Loader/></div>;
   if (!post) return <div className="py-20 text-center">Blog not found.</div>;
 
   return (
