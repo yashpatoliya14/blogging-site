@@ -62,8 +62,8 @@ exports.verifyOtp = async (req, res) => {
     const token = signJwt({ id: user._id });
     res.cookie('token', token, {
       httpOnly: true,                 
-      secure: process.env.NODE_ENV === 'production', 
-      sameSite: 'strict',              
+      secure: true, 
+      sameSite: 'None',              
       maxAge: 7 * 24 * 60 * 60 * 1000  // 7 days 
     })
 
@@ -119,8 +119,8 @@ exports.signIn = async (req, res) => {
     const token = signJwt({ id: user._id });
     res.cookie('token', token, {
       httpOnly: true,                 
-      secure: process.env.NODE_ENV === 'production', 
-      sameSite: 'strict',              
+      secure: true, 
+      sameSite: 'None',              
       maxAge: 7 * 24 * 60 * 60 * 1000  // 7 days 
     })
     return res.status(200).json({

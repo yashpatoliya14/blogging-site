@@ -7,7 +7,6 @@ import toast from 'react-hot-toast';
 import TagDisplay from '../components/Blog/TagDisplay';
 import Loader from '../components/Loader';
 
-/* Fallback data while waiting for the API */
 const INITIAL_POSTS = [
   {
     _id: 'local-1',
@@ -17,7 +16,6 @@ const INITIAL_POSTS = [
     date: 'May 16, 2025',
     tags: ['Tailwind', 'UI', 'Design'],
   },
-  /* …more demo posts… */
 ];
 
 export default function BlogDisplay() {

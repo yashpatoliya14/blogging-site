@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import DOMPurify from 'dompurify';
 import { ArrowLeft } from 'lucide-react';
+import Loader from '../Loader';
 
 export default function BlogRead() {
   const { id } = useParams();
@@ -26,7 +27,7 @@ export default function BlogRead() {
     fetchPost();
   }, [id]);
 
-  if (loading) return <div className="py-20 text-center">Loading...</div>;
+  if (loading) return <div className="py-20 text-center"><Loader/></div>;
   if (!post) return <div className="py-20 text-center">Blog not found.</div>;
 
   return (
