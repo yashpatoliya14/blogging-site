@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import BlogCard from '../components/Blog/BlogCard';
 import toast from 'react-hot-toast';
+import TagDisplay from '../components/Blog/TagDisplay';
 
 /* Fallback data while waiting for the API */
 const INITIAL_POSTS = [
@@ -96,7 +97,7 @@ export default function BlogDisplay() {
   return (
     <section className="py-16 px-6 my-24">
       {/* Header + “Create Blog” */}
-      <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between mb-8">
+      <div className="max-[100%] flex flex-col sm:flex-row items-center justify-between mb-8">
         <div className="text-center sm:text-left">
           <h2 className="text-3xl font-bold text-slate-800">Articles</h2>
           <p className="mt-2 text-slate-500">
@@ -106,28 +107,15 @@ export default function BlogDisplay() {
 
         <button
           onClick={() => onCreate()}
-          className="mt-4 sm:mt-0 inline-flex items-center gap-2 rounded-lg bg-slate-600 px-5 py-3 text-white font-semibold shadow hover:bg-slate-500 transition"
+          className="mt-4 sm:mt-0  inline-flex items-center gap-2 rounded-lg bg-black px-5 py-3 text-white font-semibold shadow hover:bg-slate-500 transition"
         >
           <PlusIcon className="h-5 w-5" />
           Create Blog
         </button>
       </div>
 
-      {/* Tag filter pills */}
-      <div className="flex flex-wrap items-center gap-3 justify-center sm:justify-start mb-12">
-        {allTags.map((tag) => (
-          <button
-            key={tag}
-            onClick={() => setSelectedTag(tag)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition ${selectedTag === tag
-                ? 'bg-slate-600 text-white'
-                : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
-              }`}
-          >
-            {tag}
-          </button>
-        ))}
-      </div>
+      {/* tag display component */}
+      <TagDisplay allTags={allTags} selectedTag={selectedTag} setSelectedTag={setSelectedTag}/>
 
       {/* Posts grid */}
       {isLoading ? (

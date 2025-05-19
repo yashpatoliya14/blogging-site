@@ -1,3 +1,5 @@
+import { Link } from "react-router";
+
 export default function CallToAction (){
 
  return (
@@ -16,12 +18,12 @@ export default function CallToAction (){
         of distraction-free writers.
       </p>
       <div className="mt-10 flex items-center justify-center gap-x-6">
-        <a
-  href="#"
+        <Link
+  to='/blogs'
   className="inline-block rounded-xl bg-white px-6 py-3 text-base font-semibold text-slate-600 shadow transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-400"
 >
   Start Writing
-</a>
+</Link>
 
         <a
           href="#features"

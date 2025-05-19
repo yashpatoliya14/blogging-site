@@ -12,7 +12,7 @@ exports.signUp = async (req, res) => {
 
     // already verified?
     if (await User.findOne({ email }))
-      return res.status(400).json({ success: false, msg: 'Email already registered.' });
+      return res.json({ success: false, msg: 'Email already registered.' });
     
     const hash = await bcrypt.hash(password, 12) //hash passoword
     const otp = genOtp(); //generate password
@@ -39,13 +39,13 @@ exports.verifyOtp = async (req, res) => {
     const { email, otp } = req.body;
     const tempUser = await TempUser.findOne({ email });
     if (!tempUser)
-      return res.status(400).json({ success: false, msg: 'No pending signup found.' });
+      return res.json({ success: false, msg: 'No pending signup found.' });
 
     if (Date.now() > tempUser.otpExpire)
-      return res.status(400).json({ success: false, msg: 'OTP expired.' });
+      return res.json({ success: false, msg: 'OTP expired.' });
 
     if (otp.toString() !== tempUser.otp)
-      return res.status(400).json({ success: false, msg: 'Invalid OTP.' });
+      return res.json({ success: false, msg: 'Invalid OTP.' });
 
     // temp user to user schema
     const user = await User.create({
@@ -85,7 +85,7 @@ exports.sendOtp = async (req, res) => {
     const { email } = req.body;
     const tempUser = await TempUser.findOne({ email });
     if (!tempUser)
-      return res.status(400).json({ success: false, msg: 'No pending signup found.' });
+      return res.json({ success: false, msg: 'No pending signup found.' });
 
     const otp = genOtp();
     const otpExp = Date.now() + (+(process.env.OTP_EXPIRY_MIN || 15) * 60 * 1000);

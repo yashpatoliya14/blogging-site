@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 
 export default function HeroSection(){
     return(
@@ -24,15 +25,12 @@ export default function HeroSection(){
               PurePost is a minimalist blogging platform where your words take center stage. No clutter, no distractions — just your thoughts, your stories, and your voice.
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
-              <a
-                href="#"
+              <Link
+                to="/blogs"
                 className="rounded-md bg-slate-900 px-3.5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-slate-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700"
               >
                 Get started
-              </a>
-              <a href="#" className="text-sm/6 font-semibold text-gray-900">
-                Learn more <span aria-hidden="true">→</span>
-              </a>
+              </Link>
             </div>
           </div>
         </div>

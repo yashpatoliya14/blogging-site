@@ -1,144 +1,188 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import {useNavigate} from 'react-router'
+import { z } from 'zod';
+import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 
+// -----------------------------------------------------------------------------------------------------------------------───
+//  Zod schema
+// -----------------------------------------------------------------------------------------------------------------------───
+const schema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email({ message: 'Please enter a valid e-mail' }),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});
+
 export default function SignUp() {
-  const [form, setForm] = useState({ email: '', password: '' });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const navigate = useNavigate()
-  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
-  // Update state on change
+  const navigate  = useNavigate();
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
+  // -----------------──── form & UI state -----------------────
+  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [errors,   setErrors]   = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // -----------------──── handlers -----------------────
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setErrors((prev) => ({ ...prev, [e.target.name]: null }));
   };
 
-  // Submit to backend
-  const onSubmit = async (e) => {
-    e.preventDefault();               
-    setLoading(true);
-    setError('');
-    
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // validate with Zod
+    const result = schema.safeParse(formData);
+    if (!result.success) {
+      const fieldErrors = {};
+      result.error.errors.forEach(err => {
+        fieldErrors[err.path[0]] = err.message;
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+
     try {
+      setIsSubmitting(true);
+
       const res = await axios.post(
-        BACKEND_URL + '/api/auth/signup',            
-        { email: form.email, password: form.password ,name:form.name},
-        { withCredentials: true }     
+        `${BACKEND_URL}/api/auth/signup`,
+        formData,
+        { withCredentials: true }
       );
 
-      toast(res.data.msg);
-      if(res.data.success){
-        navigate('/verify-otp/' + form.email)
-      }
-
-
+      toast.success(res.data.msg || 'Signed up!');
+      if (res.data.success) navigate(`/verify-otp/${formData.email}`);
     } catch (err) {
-      const msg =
-        err.response?.data?.message || 'Something went wrong. Try again.';
-      setError(msg);
+      const msg = err.response?.data?.message || 'Something went wrong. Try again.';
+      toast.error(msg);
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
+      setFormData(prev => ({ ...prev, password: '' }));
     }
   };
 
+  // -----------------──── motion variants -----------------────
+  const fadeSlide = {
+    hidden: { opacity: 0, x: 0 },
+    show  : { opacity: 1, x: 0, transition: { duration: 0.6 } },
+  };
+
   return (
-    <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-sm">
+    <div className="grid min-h-screen md:grid-cols-2">
+      {/* ----------------- Left hero image ----------------- */}
+      <div className="relative hidden md:block h-screen bg-black">
         <img
-          alt="Your Company"
-          src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
-          className="mx-auto h-10 w-auto"
+          src="https://source.unsplash.com/1600x900/?blog,writing"
+          alt="Blogging"
+          className="w-full h-full object-cover opacity-70"
         />
-        <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
-          Sign in to your account
-        </h2>
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/20" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+          <h1 className="text-white text-5xl md:text-6xl font-extrabold drop-shadow-lg">
+            Join <span className="text-slate-400">PurePost</span>
+          </h1>
+          <p className="mt-4 text-lg md:text-xl text-gray-200 max-w-xl drop-shadow-md">
+            Create, share, and explore inspiring stories with a global community of readers.
+          </p>
+        </div>
       </div>
 
-      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form onSubmit={onSubmit} className="space-y-6">
+      {/* ----------------- Right form ----------------- */}
+      <motion.div
+        variants={fadeSlide}
+        initial="hidden"
+        animate="show"
+        className="flex flex-col justify-center px-8 py-12 lg:px-24"
+      >
+        <div className="mx-auto w-full max-w-sm">
+          <img src="/purepost-logo.png" alt="PurePost" className="mx-auto h-20" />
+          <h1 className="mt-8 text-center text-2xl font-semibold text-gray-900">
+            Create your account
+          </h1>
+
+          <form className="mt-10 space-y-6" noValidate onSubmit={handleSubmit}>
+            {/* ─── Name ─── */}
             <div>
-            <label htmlFor="email" className="block text-sm/6 font-medium text-gray-900">
-              Name
-            </label>
-            <div className="mt-2">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                Name
+              </label>
               <input
                 id="name"
                 name="name"
-                type="name"
+                type="text"
                 autoComplete="name"
-                required
-                value={form.name}
+                value={formData.name}
                 onChange={handleChange}
-                className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 
-                           -outline-offset-1 outline-gray-300 placeholder:text-gray-400 
-                           focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                className={`mt-2 block w-full rounded-md border px-3 py-2
+                  text-gray-900 shadow-sm outline-none focus:ring-2 focus:ring-slate-500
+                  ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
               />
+              {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
             </div>
-          </div>
-          <div>
-            <label htmlFor="email" className="block text-sm/6 font-medium text-gray-900">
-              Email address
-            </label>
-            <div className="mt-2">
+
+            {/* ─── Email ─── */}
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Email address
+              </label>
               <input
                 id="email"
                 name="email"
                 type="email"
                 autoComplete="email"
-                required
-                value={form.email}
+                value={formData.email}
                 onChange={handleChange}
-                className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 
-                           -outline-offset-1 outline-gray-300 placeholder:text-gray-400 
-                           focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                className={`mt-2 block w-full rounded-md border px-3 py-2
+                  text-gray-900 shadow-sm outline-none focus:ring-2 focus:ring-slate-500
+                  ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
               />
+              {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
             </div>
-          </div>
 
-          <div>
-            <div className="flex items-center justify-between">
-              <label htmlFor="password" className="block text-sm/6 font-medium text-gray-900">
+            {/* ─── Password ─── */}
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
               </label>
-            </div>
-            <div className="mt-2">
               <input
                 id="password"
                 name="password"
                 type="password"
-                autoComplete="current-password"
-                required
-                value={form.password}
+                autoComplete="new-password"
+                value={formData.password}
                 onChange={handleChange}
-                className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 
-                           -outline-offset-1 outline-gray-300 placeholder:text-gray-400 
-                           focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                className={`mt-2 block w-full rounded-md border px-3 py-2
+                  text-gray-900 shadow-sm outline-none focus:ring-2 focus:ring-slate-500
+                  ${errors.password ? 'border-red-500' : 'border-gray-300'}`}
               />
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+              )}
             </div>
-          </div>
 
-          {error && (
-            <p className="text-red-600 text-sm/6">
-              {error}
+            {/* ─── Link to Sign In ─── */}
+            <p className="text-sm">
+              Already have an account?&nbsp;
+              <Link to="/login" className="font-medium text-black hover:underline">
+                Sign in
+              </Link>
             </p>
-          )}
 
-          <div>
+            {/* ─── Submit ─── */}
             <button
               type="submit"
-              disabled={loading}
-              className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold 
-                         text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 
-                         focus-visible:outline-offset-2 focus-visible:outline-indigo-600
-                         disabled:opacity-60 disabled:cursor-not-allowed"
+              disabled={isSubmitting}
+              className="flex w-full justify-center rounded-md bg-black px-4 py-2
+                text-sm font-semibold text-white transition focus:outline-none
+                focus:ring-2 focus:ring-offset-2 focus:ring-black/30 disabled:opacity-60"
             >
-              {loading ? 'Signing up...' : 'Sign up'}
+              {isSubmitting ? 'Signing up…' : 'Sign up'}
             </button>
-          </div>
-        </form>
-      </div>
+          </form>
+        </div>
+      </motion.div>
     </div>
   );
 }

@@ -120,9 +120,36 @@ const getAllBlog = async (req, res) => {
     }
 }
 
+// @route DELETE /api/blog/:id
+// @des this function use to delete blog
+const deleteBlog = async (req, res) => {
+    try {
+        const {id} = req.params;
+        const blogs = await Blog.findByIdAndDelete(id)
+        
+        if(blogs){
+            
+            return res.status(200).json({ success: true,msg:"Delete successful", data: blogs })
+        
+        }else{
+
+            return res.status(400).json({ success: false, msg: "Blog doesn't found"})
+
+        }
+
+    } catch (err) {
+
+        console.log("error at delete blog route", err)
+
+        return res.status(500).json({ success: false, msg: "blog found error" })
+
+    }
+}
+
 module.exports = {
     blogPublish,
     getBlogById,
+    deleteBlog,
     getAllBlog,
     blogSaveDraft
 }

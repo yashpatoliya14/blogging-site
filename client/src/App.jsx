@@ -9,6 +9,7 @@ import SignIn from './pages/SignIn'
 import SignUp from './pages/SignUp'
 import VerifyOtp from './pages/VerifyOtp'
 import ProtectedRoute from './ProtectedRoute'
+import About from './pages/About'
 
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
             
             <Route path='/blogs' element={<ProtectedRoute><BlogDisplay/></ProtectedRoute>}/>  
             <Route path='/create-blog/:id' element={<ProtectedRoute><BlogCreate/></ProtectedRoute>}/>  
+            <Route path='/about' element={<About/>}/>  
             <Route path='/:id' element={<ProtectedRoute><BlogRead/></ProtectedRoute>}/>  
           </Route>
             <Route path='/signin' element={<SignIn/>}/>  
