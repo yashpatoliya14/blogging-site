@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Check, Plus } from 'lucide-react'; // Optional: install lucide-react icons
 
 const tagsList = ['Technology', 'Health', 'Finance', 'Education', 'Sports', 'Travel'];
 
-export default function TagSelector({ selectedTags = [], onChange }) {
-  const [selected, setSelected] = useState(selectedTags);
+export default function TagSelector({ selectedTags , onChange }) {
+  const [selected, setSelected] = useState(selectedTags || []);
+
+  useEffect(() => {
+    setSelected(selectedTags || []);
+  }, [selectedTags]);
 
   const toggleTag = (tag) => {
     let updated;
