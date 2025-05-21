@@ -97,6 +97,8 @@ npm install
 ``` bash
 VITE_BACKEND_URL = backend url
 ```
+## Deployment Link
+- https://blogging-site-1-78qb.onrender.com
 
 ## Contact
 
